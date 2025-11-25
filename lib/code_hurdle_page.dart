@@ -1,4 +1,5 @@
 import 'package:codehurdle/codele_view.dart';
+import 'package:codehurdle/helper_functions.dart';
 import 'package:codehurdle/hurdle_provider.dart';
 import 'package:codehurdle/keyboard_view.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,10 @@ class _CodeHurdlePageState extends State<CodeHurdlePage> {
           children: [
             Expanded(
               child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.70,
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.70,
                 child: Consumer<HurdleProvider>(
                   builder: (BuildContext context, provider, child) =>
                       GridView.builder(
@@ -40,40 +44,64 @@ class _CodeHurdlePageState extends State<CodeHurdlePage> {
               ),
             ),
             Consumer<HurdleProvider>(
-              builder: (context, provider, child) => KeyboardView(
-                excludedLetters: provider.excludedLetters,
-                onPressed: (value) {
-                  provider.inputLetter(value);
-                },
-              ),
+              builder: (context, provider, child) =>
+                  KeyboardView(
+                    excludedLetters: provider.excludedLetters,
+                    onPressed: (value) {
+                      provider.inputLetter(value);
+                    },
+                  ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Consumer<HurdleProvider>(
-                builder: (context, provider, child) => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        provider.deleteLetter();
-                      },
-                      child: Text('DELETE'),
+                builder: (context, provider, child) =>
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            provider.deleteLetter();
+                          },
+                          child: Text('DELETE'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (!provider.isAValidWord) {
+                              showMsg(context, 'Not a word in my dictionary');
+                              return;
+                            }
+                            if (provider.shouldCheckForAnswer) {
+                              provider.checkAnswer();
+                            }
+                            if (provider.wins) {
+                              showResult(context: context,
+                                  title: 'You Win!!',
+                                  body: 'The Word was ${provider.targetWord}',
+                                  onPlayAgain: () {
+                                    Navigator.pop(context);
+                                    provider.reset();
+                                  },
+                                  onCancel: () {
+                                    Navigator.pop(context);
+                                  });
+                            } else if (provider.noAttemptsLeft) {
+                              showResult(context: context,
+                                  title: 'You Lost',
+                                  body: 'The Word was : ${provider.targetWord}',
+                                  onPlayAgain: () {
+                                    Navigator.pop(context);
+                                    provider.reset();
+                                  },
+                                  onCancel: () {
+                                    Navigator.pop(context);
+                                  });
+                            }
+                          },
+                          child: Text('SUBMIT'),
+                        ),
+                      ],
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (!provider.isAValidWord) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Not a word in my dictionary'),
-                            ),
-                          );
-                          return;
-                        }
-                      },
-                      child: Text('SUBMIT'),
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
